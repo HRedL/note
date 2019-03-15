@@ -1,0 +1,38 @@
+<%-- <jsp:useBean id="customer" class="com.hua.javaBean.Customer" scope="session"></jsp:useBean>--%>
+<%
+	//上面哪一行代码，相当于以下代码
+	//1.从scope（session）中获取id（customer）属性值，赋给class（com.hua.javaBean.Customer）
+	//类型的id（customer）变量
+	Customer customer=(Customer)session.getAttribute("customer");
+	//2、若属性值为null，则利用反射创建一个新的对象，把该对象赋给id（customer），并以id（customer）
+	//为属性名加到scope（session）中
+	if(customer==null){
+		customer=(Customer)Class.forName("com.hua.javaBean.Customer").newInstance();
+		session.setAttribute("customer",customer);
+	}
+%>
+
+<jsp:setProperty property="age" value="10" name="customer"/>
+age:<jsp:getProperty property="age" name="customer"/><br>
+以下代码对应上面的代码
+<%customer.setAge(20); %>
+age:<%=customer.getAge()%>
+
+若property的值为*，省略value属性值，则将自动为所有属性赋值为对应的请求参数的值
+<jsp:setProperty property="*" name="customer"></jsp:setProperty>
+这个意思是不指定value的值，从url上指明这些值，如下所示
+http://localhost:8080/day_31/javabean/index.jsp?age=30
+
+
+<jsp:useBean id="customer2" beanName="com.hua.javaBean.Customer" type="java.lang.Object" scope="request">
+</jsp:useBean>
+以上 代码相当于下面的代码
+<%
+	Object customer2=request.getAttribute("customer2");
+	if(customer2==null){
+		customer2=Class.forName("com.hua.javaBean.Customer");
+		request.setAttribute("customer2",customer2);
+	}
+	%>
+
+	

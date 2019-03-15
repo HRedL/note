@@ -1,0 +1,114 @@
+常用的web服务器
+	IIS
+	Apache
+	Tomcat
+常用的动态网页技术
+	CGI（Common GateWay Interface）
+	API常用的有（NSAPI，ISAPI）
+	ASP（Active Server Page）
+	PHP(Personal Home Page)
+	JSP/Servlet(Java Server Page)
+Servlet简介
+	Servlet是服务器小应用程序
+	用来完成B/S架构下，客户端请求的响应处理
+	平台独立，性能优良，能以线程方式运行
+	Servlet API为Servlet提供了统一的编程接口
+	Servlet一般在容器中运行
+常见的Servlet容器
+Tomcat
+
+Tomcat
+1.部署并启动tomcat服务器
+1）.解压到一个非中文目录下
+2）.配置一个环境变量，java_home(指向JDK安装的根目录)或jre_home：一般都弄好了
+3).通过双击startup.bat，启动服务器
+4）.可以再浏览器中输入localhost：8080来检验Tomcat安装是否正确
+5）.若已经启动了一个Tomcat应用，若再启动同一个Tomcat应用，会抛出异常
+java.net.BindException:Address already in use :JVM_Bind:8080
+我的机器上跑出的是java.net.BindException: Address already in use: NET_Bind
+原因是：端口号已经被占用了
+
+2.Tomcat介绍：Tomcat是一种开元的Servlet容器
+
+3.可以通过修改server.xml文件中的配置信息来修改Tomcat服务器的端口号：
+  <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+把port的值改为其他的端口号即可
+一句话，，，不懂别瞎鸡儿乱改，，，老老实实用人家的8080就行了
+
+4.为了可以再任意目录下启动tomcat服务器
+4.1把D:\Tomcat\apache-tomcat-9.0.8\bin添加到path下
+
+添加成功后，若在任意目录下通过startup启动tomcat服务器，会有提示：
+The CATALINA_HOME environment variable is not defined correctly
+This environment variable is needed to run this program
+即：要求设置CATALLINA_HOME这个环境变量
+
+5.设置CATALINA_HOME环境变量：
+5.1通过阅读startup.bat批处理文件，可知CATALLINA_HOME环境变量下有一个bin目录
+而bin目录又有一个catalina.bat文件，由此可知CATALINA_HOME指向的应该是Tomcat安装的根目录
+
+于是把Tomcat的根目录设为CATALINA_HOME环境变量
+
+此时既可以在任意目录下通过startup.bat、shutdown.bat启动、关闭tomcat服务器（我的电脑并不能用shutdown关闭，我猜测应该是跟电脑的某些dos命令冲突了）
+
+6.继续阅读startup.bat文件，发现启动tomcat服务器的catalina.bat文件
+
+在命令行窗口直接输入catalina，提示如下：
+commands:
+  debug             Start Catalina in a debugger
+  debug -security   Debug Catalina with a security manager
+  jpda start        Start Catalina under JPDA debugger
+  run               Start Catalina in the current window
+  run -security     Start in the current window with security manager
+  start             Start Catalina in a separate window
+  start -security   Start in a separate window with security manager
+  stop              Stop Catalina
+  configtest        Run a basic syntax check on server.xml
+  version           What version of tomcat are you running?
+所以可以用catalina start开
+或者用catalina run开（这个是在当前dos窗口开）
+用catalina stop关闭
+
+Tomcat的管理程序
+Tomcat提供了一个管理程序：manager，用于部署到Tomcat服务器中的web应用程序
+要访问manager web应用程序，需要添加具有管理员权限的账号，编辑conf目录下的
+tomcat——users.xml文件，添加manager角色，设置用户名和密码
+具体操作请参见百度
+
+Web程序结构
+一个web应用程序是由一组Servlet，html页面，类以及其它的资源组成的运行在web
+服务器上的完整的应用程序，以一种结构化的有层次的目录形式存在
+
+组成web应用的这些文件要部署在相应的目录下，在webapps目录下的每一个子目录都是一个独立的web应用程序
+，子目录的名字就是web引用程序的名字，也就是web应用程序的跟。用户通过web应用程序的根来访问应用程序中的资源
+
+	具体结构
+	-test（Web应用程序的根目录，属于此应用程序的所有文件都存放在这个目录下）
+		-WB-INF（存放Web应用程序的部署描述符文件web.xml）
+			-classes(存放Servlet和其他游泳的类文件)
+			-lib（存放Web应用程序需要用到的jar文件）
+			-web.xml（web.xml文件包含Web应用程序的配置和部署信息）
+		-index.jsp
+		-html
+		图片
+	想要配置好这个程序结构，要把所有的class文件放入classes文件夹里，并且把整个test文件放到webapps
+	一种是直接把所有class文件拷贝到classes文件夹里（注意类的包也要拷贝）然后把整个test文件拷贝到webapps
+	另一种是设置好路径，自动的往里边放，class文件存放：在src那点右键buildpath 然后confi。。。然后bro。。。然后选择classes文件
+	test文件自动放到webapps：有很多方法
+	这个最好酷炫
+	在conf目录下依此创建Catalina\localhost目录，然后在localhost目录下为test这个web应用程序建立test.xml文件，编辑这个文件输入以下内容
+	<?xml|version="1.0" encoding="UTF-8"?>
+	<Context path="这个应该是随便起"docBase="那个test文件的目录，物理路径" reloadable="true"/>reloadable当修改了docBase下的classes目录下的class文件时，tomcat服务器是否会重新加载WEB应用
+
+
+
+好吧，上面说的这么麻烦的东西都是，，，都是为了让你熟悉下子目录结构，如果你想要，，，，其实直接在IDE里建一个web项目就是了
+	
+
+
+
+
+
+

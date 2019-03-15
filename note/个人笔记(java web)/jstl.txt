@@ -1,0 +1,115 @@
+JSTL全名为JavaServer Pages Standard Tag Libraty，
+主要提供给Java Web开发人员一个标准通用的标签函数库
+注：JSTL也支持EL语法
+
+核心标签库（Core tag Library）
+
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+1.表达式操作
+<c:out>、<c:set>、<c:remove>和<c:catch>(几乎不用)
+
+1）.<c:out value="" default="" escapeXml=""></c:out>
+作用：用来显示内容
+
+value：想要在页面上显示的内容，可以用EL表达式
+default：当value的值为空，或者EL表达式找不到值时，显示这个值（一般不用这个属性）
+escapeXml：这个是决定第一个属性中的<>等东西能不能显示，默认为true（一般也不用）
+使用方式：<c:out value="${param.name }" default="化红磊" escapeXml="true"></c:out>
+
+注意：这个标签主要是在EL表达式中有<>等符号的时候使用，其他的输出，一般用EL就够了
+
+2）.<c:set var="" value="" scope="" target="" property=""></c:set>
+作用：设置值
+使用方式：①.为域对象的属性赋值
+<c:set var="sex" value="男" scope="request"> </c:set>
+	 ②.给域对象中某一个JavaBean的某个参数赋值
+<c:set target="${requestScope.cust}" property="id" value="${param.id }" ></c:set>
+以上语句含义为：给Customer类的cust对象的id属性赋值，所赋的值为value里面对应的值
+
+注意：其中value、target都可以使用EL表达式
+
+3）.<c:remove var="" scope=""/>
+作用：移除某个域对象的某个属性
+var：这个为属性名
+scope：这个是域对象
+使用方式：<c:remove var="birth" scope="request"/>
+
+2.流程控制
+<c:if>、<c:choose>、<c:when>、<c:otherwise>
+1）.<c:if test="" var="" scope=""></c:if>
+作用：判断语句
+test：判断是否为true
+var：可以把test里边的值存在着里面
+scope：存放的域对象
+使用方式：①<c:if test="${age>18}">成年了</c:if>
+	②<c:if test="${param.age>18}" var="isAdult" scope="request"></c:if>
+	<c:out value="${requestScope.isAdult }"></c:out>
+注意：只有<c:if></c:if>没有else
+
+2）.choose、when、otherwise
+这几个标签可以实现if elseif else的操作
+
+test：判断是否为true
+
+使用方式：<c:choose>
+	<c:when test="${param.age>60 }">老年</c:when>
+	<c:when test="${param.age>35 }">中年</c:when>	
+	<c:when test="${param.age>18 }">青年</c:when>	
+	<c:otherwise>未成年</c:otherwise>
+</c:choose>
+
+3.迭代操作
+<c:forEach>和<c:forTokens>
+
+1).<c:forEach >
+除了支持数组之外，还支持其他的，例如：Collection，Map，Enumeration
+
+作用：迭代操作，跟java中的foreach语句功能相似
+注意：以下都为非必须的
+var：用来存放现在指到的成员（不能用EL）
+items：被迭代的集合对象（能用EL）
+varStatus：用来存放现在指到的相关成员信息（不能用EL）
+	>index：现在指到成员的索引
+	>count：总共指到成员的总数
+	>first：现在指到的成员是否为第一个成员
+	>last:现在指到的成员是否为最后一个成员
+begin：开始的位置（能用EL）
+end：结束的位置（能用EL）
+step：每次迭代的间隔数（能用EL）
+
+2）<c:forTokens>
+用来浏览一字符串中所有的成员，其成员是由定义符号（delimiters）所分隔的。
+其余的东西跟上面的forEach'一样，这个东西不常用
+
+4.URL操作
+JSTL包含三个与URL操作有关的标签，他们分别为：<c:import>、<c:redirect>、<c:url>
+1）.<c:import>可以包含任何页面到当前页面
+使用方式：<c:import url="http://www.baidu.com"></c:import>
+
+2）.<c:redirect>
+使当前JSP页面重定向到指定的页面，使当前JSP页面转到指定页面
+
+/代表的是当前WEB应用的根目录
+使用方式：<c:redirect url=""></c:redirect>
+
+3）.<c:url>
+产生一个url地址，可以通过判断Cookie是否可用，来自动进行RUL重写，对GET请求参数编码
+可以把产生的URL存储在域对象的属性中
+还可以使用c:param为URL添加参数。c:url会对参数进行自动的转发
+value中的/代表的是当前WEB应用的根目录
+
+使用方式：<c:url value="/" var="hua" scope="page">
+		<c:param name="i" value="1"></c:param>
+	</c:url>
+
+
+
+
+
+
+
+
+
+
+
+

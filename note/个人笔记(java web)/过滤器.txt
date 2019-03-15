@@ -1,0 +1,99 @@
+1.Filter
+
+1）.Filter是什么？
+JavaWEB的一个重要组件，可以发送到Servlet的请求拦截，并对响应进行拦截。
+Filter是实现了Filter接口的Java类
+Filter需要在web.xml文件中进行配置和映射
+
+2）.如何创建一个FIlter，并让它跑起来
+
+①.创建一个Filter类：实现Filter接口
+public class HelloFilter implements Filter
+
+②在web.xml文件中配置并映射该Filter，
+其中url-pattern指定该Filter可以拦截哪些资源，即可以通过哪些url访问到该Filter
+<filter>
+	<filter-name>helloFilter</filter-name>
+	<filter-class>com.hua.javaweb.jstl.HelloFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>helloFilter</filter-name>
+	<url-pattern>/test.jsp</url-pattern>
+</filter-mapping>
+
+3）.FIlter相关的API
+
+     >public void init(FilterConfig filterConfig):类似于Servlet的init方法，在创建Filter对象（
+     Filter对象在Servlet容器加载当前WEB应用时即被创建）后，立即被调用，且只被调用一次，
+     该方法用于对当前的Filter进行初始化操作，Filter实例时单例的。
+	*FilterConfig:类似于ServletConfig
+	*可以在web.xml文件中配置当前Filter的初始化参数，配置方式也和Servlet类似
+	    <init-param>
+		<param-name>name</param-name>
+		<param-value>root</param-value>
+	    </init-param>
+    >public void doFilter(ServletRequest arg0, ServletResponse arg1,  FilterChain arg2)：
+    真正Filter的逻辑代码需要编写在该方法中，每次拦截都会调用该方法
+	*FilterChain：Filter链，多个Filter可以构成一个Filter链
+		--void doFilter(ServletRequest request, ServletResponse response) 
+		把请求传给Filter链的下一个Filter，若当前FIlter是FIlter链的最后一个Filter，
+		把请求给到目标Servllet（或JSP）
+
+		--多个Filter拦截的顺序和<filter-mapping>配置的顺序有关，靠前的先被调用	
+
+    >public void destroy()：释放当前Filter所占用的资源的方法，在Filter被销毁之前被调用，而且只调用一次
+
+
+4).执行顺序
+	1).一个FilterChain，从第一个Filter执行doFilter（）之前的代码
+	2).到第二个Filter中的doFilter（）之前的代码
+	3).到目标页面的代码
+	4).再执行第二个Filter中doFilter（）之后的代码
+	5).再执行第一个Filter中doFilter()之后的代码
+
+5).<filter-mapping>中的<dispatcher>
+注意：可以写多个，写多个是指，对于这几个类型的访问当前Filter都可以工作
+1）.用的多的
+	①.FORWORD：如果目标资源时通过RequestDispatcher的forward（）（相当于JSP页面中的<jsp：forward>）
+		方法访问时，name该过滤器将被调用（对转发工作）
+	②.注意：page指令的errorPage也是转发的形式进行跳转页面的，所以也可以工作。
+	REQUEST：当用户直接访问页面时，web容器将会调用过滤器。（对请求工作）
+2）.用的少的
+	①.INCLUDE:如果目标资源是通过RequestDispatcher的include（）（相当于JSP页面中的<jsp：include>）
+		方法访问时，那么该过滤器将被调用
+	②.ERROR：如果目标资源时通过声明式异常处理机制（在web.xml文件中设置异常处理界面）调用时，那么该过滤器将被调用。
+
+补：页面异常处理的两种方式
+①用page指令中的pageError属性来声明异常处理页面
+<%@ page errorPage="异常处理页面" %>
+
+②在web.xml文件中写声明式异常
+<error-page>
+		<exception-type>一个异常类</exception-type>
+		<location>异常处理页面</location>
+</error-page>
+
+
+典型应用
+1.禁用缓存过滤器
+如果服务端改了之后，那边就会立刻看到改变。
+写一个Filter，在里面加上以下代码，然后配置作用于想要作用的页面（在web.xml中配置）
+response.setDateHeader("Expires",-1);
+response.setHeader("Cache-Control","no-cache");
+response.setHeader("Pragma","no-cache");
+
+2.字符编码过滤器
+在EncodingFilter中，
+ServletContext sc= getFilterConfig().getServletContext();
+String encoding=sc.getInitParameter("encoding");//获取<context-param>中写的encoding的值
+request.setCharacterEncoding(encoding);
+filterChain.doFilter(request, response);
+
+3.使用Filter完成一个简单的权限模型
+
+1）.需求
+①.管理权限
+	>查看某人的权限
+	>
+
+

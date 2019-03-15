@@ -1,0 +1,106 @@
+1.HttpSession
+1).HttpSession:在服务器端保持HTTP状态信息的方案，和其对应的是Cookie
+
+2).产生HttpSession对象的过程：当程序需要为某个客户端的请求创建一个session时，
+服务器首先检查这个客户端的请求里是否包含了session标识如果已经包含一个sessionId
+则说明以前已经为此客户创建过session，服务器就按照session id把这个session
+检索出来使用（如果检索不到，可能会新建一个，这种情况可能出现在服务端已经删除了该用户对应的session对象,但用户
+人为地在请求的RUL后面附加上一个JSESSION的参数。如果客户请求不包含sessionId，则为此客户创建一个session
+并且生成一个与此session相关联的sessionId，这个session id将在本次响应中返回给客户端保存）
+
+3).使用Cookie来跟踪Session：session通过SessionID来区分不同的客户，session是以cookie或URL重写为基础的，
+默认使用cookie来实现，系统会创造一个名字为JSESSIONID的输出cookie，这称之为session cookie，
+session cookie是存储于浏览器内存中的，并不是写到硬盘上的，通常看不到JSESSIONID。
+
+2.HttpSession的生命周期
+
+1）.创建一个HttpSession对象
+
+一个常见的错误是以为session在有客户端访问时就被创建（若第一次访问某WEB应用的JSP页面，切该JSP页面的page指定的session属性为false）
+
+①.某server端程序（如Servlet）调用HttpServlet.getSession(true)或者HttpServletRequest.getSession()这样的语句时才会被创建
+②.若第一次访问某WEB应用的JSP页面，且该JSP页面的page指定的session属性为true，服务器会自动为该页面分配一个HttpSession对象
+
+2）.销毁HttpSession对象：
+
+①直接调用HttpSession的invalidate（）方法：该方法使HttpSession失效
+②服务器进程被停止（或当前WEB应用被卸载）
+③超出HttpSession的过期时间.
+	》设置HttpSession的过期时间：session.setMaxInactiveInterval(5);单位为秒
+	》在web.xml文件中设置HttpSession的过期时间
+注意：关闭浏览器只会使存储在客户端浏览器内存中的session cookie失效，不会使服务器端的session对象失效
+
+3.HttpSession的相关的API
+
+1).获取Session对象：request.getSession（）、request.getSession(boolean create)
+	①request.getSession(Boolean create):
+	若create为false，则若没有和当前JSP页面关联的HttpSession对象，则返回null；若有，则返回那个HttpSession对象
+	Create为true，一定返回一个HttpSession对象。若没有和当前JSP页面关联HttpSession对象，则服务器创建一个新的HttpSession对象返回;若有，直接返回关联的
+	②request.getSession():等同于request.Session(true)；
+
+2).属性相关的：setAttribute、getAttribute、removeAttribute
+3).使HttpSession失效的：invalidate（）方法
+4).设置其最大时效的setMaxinactiveInterval
+
+4.RUL重写：
+
+1).Servlet规范中引入了一种补充的会话管理机制，它允许不支持Cookie的浏览器也可以与WEB服务器保持连续的会话
+2).将会话标识号以参数形式附加在超链接的URL地址后面的技术成为URL重写
+3).代码
+encodeURL
+encodeRedirectURL
+<a href="<%=response.encodeURL("login.jsp")%>">重新登陆<a/>
+这样在浏览器上源文件上就可以看到login.jsp后面跟了一个JSESSIONID
+
+
+
+session对象的案例，请看项目day_30
+
+1.绝对路径的问题：
+1）.开发时建议编写“绝对路径”：写绝对路径肯定没有问题，但写相对路径可能会有问题
+使用相对路径的路径混乱案例：
+在由Servlet转发到JSP页面时，此时浏览器地址栏上显示的是Servlet的路径，而若JSP超链接
+还是相对于JSP页面的地址，则可能会出现路径混乱的问题
+
+2）.编写绝对路径可以避免上诉问题
+①在JavaWEB中什么叫“绝对路径”：相对于 contextPath的路径，即任何的路径都必须带上contextPath
+
+http://localhost:8080/contextPath/
+②如何完成编写：若/代表的是站点的根目录，在其前面加上contextPath就可以了
+而contextPath可以由request或application的getContextPath（）方法来获取
+
+3.JavaWEB中的 /到底代表什么？
+①当前WEB应用的根路径http://localhost:8080/contextPath/(若/需交由Servlet容器处理)
+	>请求转发时
+	>web.xml文件中映射Servlet访问路径：
+	>各种定制标签中的/
+②WEB站点的根路径 http://localhost:8080/（若/交由浏览器来处理）
+	>超链接
+	>表达中的action：
+	>做请求重定向的时候response.sendRedirect("/a.jsp")
+
+session对象的应用：避免表单重复提交
+表单重复提交的问题
+1）.重复提交的情况：
+①在表单提交到一个Servlet，而Servlet又通过请求转发的方式响应了一个JSP（HTML）
+页面，此时地址栏还保留着Servlet的那个路径，在响应页面点击“刷新”
+②在响应页面没有到达时重复点击“提交按钮“
+③点击“返回，再点击“提交”
+④转发情况下，刷新当前页面也算，重定向情况下，刷新当前页面就不算
+
+2).不属于重复提交的情况：点击“返回”，“刷新”原表单页面，再提交
+
+3）.如何避免表单的重复提交：在表单中做一个标记，提交到Servelt时，检查标记是否存在且是否和预定义的标记一致，
+若一致，则受理请求，并销毁标记，若不一致或没有标记，则直接响应提示信息：“重复提交”
+
+①仅提供一个隐藏域：<input type="hidden" name="token" value="huahonglei"/>行不通:没有方法清除固定的请求参数
+②把标记放在request中：行不通，因为表单页面刷新后，request已经被销毁，再提交表单的是一个新的request。
+③把标记方法哦session中：可以
+
+	>在原表单页面，生成一个随机值token
+	>在原表单页面，把token值放入session属性中
+	>在原表单页面，把token值放入到隐藏域中
+	>在目标的Servlet中：获取session和隐藏域中的token值
+	>比较两个值是否一致：若一致，受理请求，且把session域中的token属性消除
+	>若不一致，则直接响应提示页面：“重复提交”
+

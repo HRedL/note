@@ -1,0 +1,23 @@
+监听器
+1.简介
+监听器：专门用于对其他对象身上发生的时间或状态改变进行监听和相应处理的对象，当被监视对象
+发生情况时，立即采取相应的行动。
+Servlet监听器：Servlet规范中定义的一种特殊类，它用于监听web应用程序中的ServletContext、
+HttpSession和ServletRequest等域对象的创建与销毁时间，以及监听这些域对象中的属性发生修改的事件
+2.Servlet监听器的分类
+按监听的事件类型Servlet监听器可分为如下三种类型
+	①.监听域对象自身的创建和销毁的事件监听器
+	②.监听域对象中的属性的增加和删除的事件监听器
+	③.监听绑定到HttpSession域中的某个对象的状态的事件监听器
+
+3.监听域对象自身的创建和销毁
+1）.域对象创建和销毁的事件监听器就是用来监听ServletContext、HttpSession、HttpServletReqeust
+这三个对象的创建和销毁事件的监听器
+
+2）.域对象的创建和销毁时机
+		创建时机	销毁时机
+ServletContext      web服务器启动时为每个web应用程序创建相应的ServletContext对象  web服务器关闭时为每个web应用程序销毁相应的ServletContext对象
+
+HttpSession	浏览器开始与服务器会话时创建	调用HttpSession.invalidate().超过了session的最大有效时间间隔，服务器进程被停止
+
+ServletRequest	每次请求开始时被创建	每次访问结束后销毁

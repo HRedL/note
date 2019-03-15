@@ -1,0 +1,204 @@
+1.GenericServlet
+
+1）.是一个Servlet.是Servlet接口和ServletConfig接口的实现类.但是一个抽象类，其中的service方法为抽象方法
+
+2).如果新建的Servlet程序直接继承GenericServlet会使得开发更简洁
+
+3）具体实现
+①.在GenericServlet中声明了一个ServletConfig类型的成员变量，在init（ServletConfig）方法中对其进行了初始化
+
+②.利用servletConfig成员变量的方法实现了ServletConfig接口的方法
+
+③.还定义了一个init（）方法，在init（ServletConfig）方法中对其进行调用，子类可以直接覆盖init（）在其中实现对Servlet的初始化
+
+④.不建议直接覆盖init（ServletConfig），因为如果忘记编写super.init（ServletConfig），而还是用了ServletConfig接口的方法，
+则会出现空指针异常.
+
+⑤新建的init（）方法并非Servlet的生命周期方法，而init（ServletConfig）是生命周期相关的方法。
+
+2.HttpServlet:
+1).是一个Servlet，继承自GenericServlet，针对于HTTP协议所定制
+
+2）.在service（）方法中直接把ServletRequest和ServletResponse转为HttpServletRequest和HttpServletResponse
+并调用了重载的service（HttpServletRequest，HttpServletResponse）
+
+在service（HttpServletRequest，HttpServletResponse）获取了请求的方式：request.getMethod().
+根据请求方式有创建了doXxx（）方法（Xxx为具体的请求方式，比如POST，GET）
+
+3）.实际开发中，直接继承HttpServlet，并根据请求方式复写doXxx()方法接口.
+
+4).好处：直接由针对性的覆盖doXxx（）方法；直接使用HttpServletRequest和HttpServletResponse，不再需要强转。
+
+4.请求的转发和重定向
+
+转发response.sendRedirect("d.jsp"); 
+
+重定向RequestDispatcher rd=request.getRequestDispatcher("d.jsp");
+		rd.forward(request, response);
+
+1）.本质区别：请求的转发只发出了一次请求，而重定向则发出了两次请求
+
+具体：
+
+①请求的转发：地址栏是初次发出请求的地址
+
+请求的重定向：地址栏不再是初次发出的请求地址.地址栏为最后响应的那个地址
+
+
+②请求的转发：在最终的Servlet中，request对象和中转的那个request是同一个对象
+
+请求的重定向：在最终的Servlet中，request对象和中转的那个request不是同一个对象.
+
+③.请求的转发：只能转发给当前WEB应用的资源
+
+请求的重定向：可以重定向到任何资源
+
+④请求的转发：/代表的是当前WEB应用的根目录
+http://localhost:8080/day24
+
+请求的重定向:/代表的是当前WEB站点的根目录.
+http://localhost:8080
+
+
+5.JSP
+
+1).JSP是简Servlet编写的一种技术，它将java代买和HTML语句混合在同一文件中编写。
+只对网页中的要动态产生的内容采用java代码来编写，而对固定不变的静态内容采用普通的静态HTML页面的方式编写。
+
+2）.HelloWorld
+新建一个JSP页面，在body节点内的<%   %>即可编写java代码
+
+3）.JSP可以放置在WEB应用程序中的除了WEB—INF及其子目录外的其他任何目录中，
+JSP页面的访问路径与普通HTML页面的访问路径形式也完全一样.
+
+4）查看自己的jsp：D:\新建文件夹 (6)\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\work\Catalina\localhost\day_22_2\org\apache\jsp
+跟这个路径相似，自己再找的时候再试试
+
+5）.jsp的运行原理：JSP本质上是一个Servlet.
+
+每个JSP页面在第一次被访问时，JSP引擎将它翻译成一个Servlet源程序，接着再把这个Servlet源程序编译成Servlet的class类文件。
+然后再由WEB容器（Servlet引擎）像调用普通Servlet程序一样的方式来装载和解释执行这个由JSP页面翻译成的Servlet程序。
+
+6)。JSP的隐含变量   隐含对象：jsp中自带的，没有声明就可以使用的对象
+
+  public void _jspService(final javax.servlet.http.HttpServletRequest request, final javax.servlet.http.HttpServletResponse response)
+      throws java.io.IOException, javax.servlet.ServletException {
+
+    final javax.servlet.jsp.PageContext pageContext;
+    javax.servlet.http.HttpSession session = null;
+    final javax.servlet.ServletContext application;
+    final javax.servlet.ServletConfig config;
+    javax.servlet.jsp.JspWriter out = null;
+    final java.lang.Object page = this;
+
+	.....
+	.....
+	.....
+	.....
+	使用<% %>编写的代码在此位置，可以用到request，response，pageContext，session，application，config，out，page
+	这8个隐含对象（实际上还可以使用一个exception的隐含对象），即jsp有9个隐含对象
+
+①.request：HttpServletRequest的一个对象.
+
+②.response：HttpServletResponse的一个对象（在JSP页面中几乎不会调用response的任何方法。）
+
+③pageContext：页面的上下文，是PageContext的一个对象，可以从该对象中获取到其他的8个隐含对象，也可以从中获取到当前
+页面的其他信息。（学习自定义标签时使用它）
+
+④session：代表浏览器和服务器的一次对象
+
+⑤.application：代表当前的WEB应用.是ServletContext对象。
+
+⑥.config:当前JSP对应的Servlet的ServletConfig对象（几乎不使用）。若需要访问当前JSP配置的初始化参数，需要通过映射的地址才可以
+
+<servlet>
+	<servlet-name>hello</servlet-name>
+	<jsp-file>/Hello.jsp</jsp-file>
+	<init-param>
+		<param-name>user</param-name>
+		<param-value>root</param-value>
+	</init-param>
+
+</servlet>
+<servlet-mapping>
+	<servlet-name>hello</servlet-name>
+	<url-pattern>/hi</url-pattern>
+</servlet-mapping>
+
+⑦out:JspWriter对象，调用out.println（）可以直接把字符串打印到浏览器上。如果想要换行，需要加<br>标签，自己是不能换行的
+
+⑧page：指向当前JSP对应的Servlet对象的引用，但为Object类型，只能调用Object类的方法（几乎不使用）
+
+⑨exception：在声明了page指令的isErrorPage="true"时，才可以使用
+
+pageContext request session application(对属性的作用域的范围从小到大)
+
+out,response,config,page
+
+exception
+
+7）.JSP表达式（expression）提供了将一个java变量或表达式的计算结果输出到客户端的简化方式，
+它将要输出的变量或表达式直接封装在<%=  %>之中
+
+8）.JSP脚本片段（scrpitlet）是指嵌套在<%%>之中的一条或多条java程序代码.
+多个脚本片段中的代码可以互相访问
+
+9）.JSP声明：JSP声明将Java代码封装在<%!  %>之中，它里面的代码将被插入进Servlet的_jspService方法的外面
+（在JSP页面中几乎从不这样使用）
+
+10）.JSP注释的格式：<%--JSP注释--%> <!--HTML注释-->
+区别：JSP注释可以阻止Java代码的执行.
+
+
+
+
+补：1.如果web.xml配置错误，服务器（tomcat）启动报错或者无法启动
+2.web.xml是服务器启动的时候就在加载
+3.如果修改了web .xml配置文件，重启服务器
+
+补2：乱码问题
+1.doPost方法
+request.setCharacterEncoding("UTF-8");
+只在Post方法有效
+2.doGet方法
+new String（userName.getBytes("ISO8859-1"),"UTF-8"）;
+
+补3：
+response.setContentType("text/html");
+response.setCharacterEncoding("UTF-8");
+PrintWriter out=response.getWriter();
+注意关闭流
+
+6.和属性相关的方法：
+1）.方法
+
+Object getAttribute（String name）：获取制定的属性
+Enumeration getAttributeNames（）：获取所有的属性的名字组成的Enumeration对象
+removeAttribute（String name）：移除指定的属性
+void setAttribute（String name，Object o）：设置属性
+
+2）.pageContext，request，session，application对象都有这些方法！
+这四个兑现也称之为域对象
+
+pageContext：属性的作用范围仅限于当前JSP页面
+request：属性的作用范围仅限于同一个请求。
+session：属性的作用范围限于一次会话：浏览器打开知道关闭被称之为一次会话（在此期间会话不失效）
+application：属性的范围限于当前WEB应用，是范围最大的属性作用范围，只要在一处设置属性，在其他各处的JSP或Servlet中都可以获取到。
+
+7.JSP表达式（expression）提供了将一个java变量或表达式的计算结果输出到客户端的简化方式，
+它将要输出的变量或表达式直接封装在<%=  %>之中
+
+8.JSP脚本片段（scrpitlet）是指嵌套在<%%>之中的一条或多条java程序代码.
+多个脚本片段中的代码可以互相访问
+
+
+
+
+
+
+
+
+
+
+
+

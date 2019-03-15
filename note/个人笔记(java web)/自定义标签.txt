@@ -1,0 +1,135 @@
+自定义标签
+1.步骤
+1）.创建一个标签处理器类：实现SimpleTag接口
+2).在WEB—INF文件夹下新建一个.tld（标签库描述文件）为扩展名的xml文件
+并拷入固定的部分；并对description,display-name,tlib-version,short-name,
+uri做出修改
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+    
+  <description>JSTL 1.1 core library</description>
+  <display-name>JSTL core</display-name>
+  <tlib-version>1.1</tlib-version>
+  <short-name>c</short-name>
+  <uri>http://java.sun.com/jsp/jstl/core</uri>
+</taglib>
+3).在tld文件中描述自定义的标签：
+
+<!-- 描述自定义的HelloSimpleTag -->
+  <tag>
+  <!-- 标签的名字：在JSP页面上使用标签时的名字 -->
+  	<name>hello</name>
+  	<!-- 标签所在的全类名 -->
+  	<tag-class>com.hua.javaweb.simpetag.HelloWorld</tag-class>
+  	<!-- 标签的类型 -->
+  	<body-content>empty</body-content>
+  </tag>
+4）.在JSP页面上使用自定义标签
+	①.使用taglib指令导入标签库描述文件
+	<!-- 导入标签库（描述文件） -->
+<%@taglib uri="http://huahonglei.com" prefix="hua" %> 
+
+	②.使用自定义的标签
+	<hua:hello/>
+
+2.setJspContext：一定会被JSP引擎所调用，先与doTag，把代表JSP引擎的
+pageContext传给标签处理器类
+pageContext可以得到8个隐含对象
+	private PageContext pageContext;
+	@Override
+	public void setJspContext(JspContext arg0) {
+		pageContext=(PageContext)arg0;
+		
+	}
+3.带属性的自定义标签：
+1）.先在标签处理器类中定义setter方法.建议把所有的属性的类型都设置为String
+
+2）.在tld描述文件中描述属性：
+<attribute>
+  	<!-- 属性名,需和标签处理器类 的setter方法定义的属性相同 -->
+  	<name>count</name>
+  	<!-- 该属性是否为必须 -->
+  	<required>false</required>
+  	<!-- RunTime Expression Value，当前属性是否可以接受运行时表达式的动态值 -->
+  	<rtexprvalue>false</rtexprvalue>
+  </attribute>
+练习中还设置了一个value属性
+
+3）.在页面中使用属性，属性名同tld文件中定义的名字.
+<hua:hello value="${param.value}" count="10"/>
+
+4）.通常情况下，开发简单标签，直接继承SimpleTagSupport实现类即可，可以直接调用其对应
+的getter方法，得到对应的API
+
+4.带标签的自定义标签：
+
+1）.若一个标签有标签体：
+
+<hua:testFragment>瞿玉玉是个憨熊dasdasdas</hua:testFragment>
+
+在定义标签的标签处理器中使用JspFragment对象封装标签体信息。
+
+2）.若配置了标签含有标签体，则JSP引擎会调用setJspBody( JspFragment jspBody )方法
+把JspFragment传递给标签处理器类，在SimpleTagSupport中还定义了一个getJspBody（）
+方法，用于返回JSPFragment对象
+
+3）.JspFragment的invoke(Writer)方法，吧标签体的内容从Writer中输出，若为null，
+则等同于invoke(getJspContext().getOut())，即直接把标签体内容输出到页面上
+
+有时，可以借助于StringWriter，可以在via哦前处理器类中先得到标签体的内容：
+//1.利用StringWriter的到标签体的内容
+StringWriter sw=new StringWriter();
+bodyContent.invoke(sw);
+
+//2.把标签体的内容都变为大写
+String content=sw.toString().toUpperString();
+
+
+4）.在tld文件中，使用body-content节点描述标签体的类型
+<body-content>scriptless</body-content>
+
+body-content可以取得值
+①.empty:没有标签体，大部分情况下，取值为scriptless
+scriptless：标签体可以包含el表达式和JSP动作元素，但不能包含JSP的脚本元素
+tagdependent：表示标签体由标签本身去解析处理，若指定tagdependent，在标签体中
+的所有代码都会原封不动的交给标签处理器，而不是将执行结果传递给标签处理器
+
+5）.定义一个自定义标签：<hua:printUpper time="10" >abcdefg</hua:printUpper>
+
+6).应用案例：实现forEach标签：
+     分析：
+	>两个属性：items（集合类型，Collection），var（String类型）
+
+	>doTag:
+		*遍历items对应的集合
+		*把正在遍历的对象放入pageContext中，键：var，值：正在遍历的对象
+		*把标签体的内容直接输出到页面上
+  实现：
+		if(items!=null) {
+			//*遍历items对应的集合
+			for(Object obj:items) {
+				//*把正在遍历的对象放入pageContext中，键：var，值：正在遍历的对象
+				getJspContext().setAttribute(var,obj);
+				//*把标签体的内容直接输出到页面上
+				getJspBody().invoke(null);
+			}
+		}
+
+5.开发有父标签的标签
+1）.父标签无法获取子标签的引用，父标签仅把字标签作为标签体来使用
+
+2）.字标签可以通过getParent（）方法来获取父标签的引用（需继承SimpleTagSupport或自实现getParent方法）
+若子标签的确有父标签，JSP引擎会把代表父标签的引用通过setParent(JspTag parent)赋给标签处理器
+
+3).注意：父标签的类型是JspTag（一个空接口，但是来统一SimpleTag和Tag的，实际使用需要进行类型的强制转换）类型
+
+4）.在tld配置文件中，无需为父标签有额外的配置，但，字标签是以标签体的形式存在的，所以父标签的body-content
+需要设置为scriptless
+
+
+
+
+
+

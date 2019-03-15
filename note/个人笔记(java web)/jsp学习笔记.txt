@@ -1,0 +1,93 @@
+
+JSP指令：page、include、taglib
+
+1.page指令
+
+1）page指令用于定义JSP页面的各种属性，无论page指令出现在JSP页面中的什么地方，
+它作用的都是整个JSP页面，为了保持程序的可读性和遵循良好的编程习惯，page指
+令最好是放在整个JSP页面的起始位置
+
+2）常用的一些指令
+①.import 属性：制定当前jSP页面对应的Servlet需要导入的类
+
+②.session =ture/false如果设置为false，指定当前页面的session隐藏变量是否可用，也可以说访问当前
+页面时是否一定要生成HttpSession
+③.errorPage和isErrorPage
+	>errorPage指定若当前页面出现错误的实际响应页面时什么（转发过去，见下面）。其中/表示的是当前WEB应用的根目录。
+
+	>在响应error.jsp时，jSP引擎使用的请求转发的方式
+
+	>isErrorPage指定当前页面是否为错误处理页面，可以说明当前页面是否可以使用exception隐藏变量。需要注意的
+	：若指定isErrorPage="true"，并使用exception的方法了，一般不建议能够直接访问该页面。
+	
+	>如何使客户不能直接访问某一个页面呢？对于Tomcat服务器而言，WEB-INF下的文件是不能通过在浏览器中直接输入
+	来访问的.但通过请求的转发是可以的
+	
+	>还可以web.xml文件中配置错误页面：
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/f.jsp</location>
+	</error-page>
+	
+	<error-page>
+		<exception-type>在这写一个异常</exception-type>
+		<location>/WEB-INF/f.jsp</location>
+	</error-page>
+
+
+
+④.contentType:指定当前JSP页面的相应类型.
+contentType="text/html; charset=UTF-8"   补：charset是指响应的那个页面的编码格式
+实际调用的是response.setContentType("text/html; charset=UTF-8");
+
+通常情况下，对于JSP页面而言其取值均为text/html;charset=UTF-8
+
+
+
+补：
+如果想查contentType的东西，去tomcat服务器的web.xml文件里去查格式
+
+⑤.pageEncoding:指定当前JSP页面的字符串.通常情况下该值和contentType中的charset一致.
+
+⑥.isElIgnored:指定当前JSP页面是否可以使用EL表达式。通常取值为true
+
+3.include指令：
+
+1).include 指令用于通知JSP引擎在翻译当前JSP页面时将其他文件中的内容合并选进当前JSP页面转换成Servlet源文件中，
+这种在源文件级别进行引入的方式称之为静态引入，当前JSP页面与静态引入的页面紧密结合为一个Servlet.
+
+2).file属性的设置值必须使用相对路径.
+
+3).如果以“/”开头，表示相对于当前WEB应用程序的根目录（注意不是站点根目录），否则，表示相对于当前文件.
+
+4.jsp:include 标签：
+
+1).<jsp:include page="a.jsp"></jsp:include>
+
+2).动态引入：并不是像include指令生成一个Servlet源文件，而是生成两个Servlet源文件，然后通过一个方法的方式把目标页面包含
+进来.
+
+org.apache.jasper.runtime.JspRuntimeLibrary.include(request, response, "a.jsp", out, false);
+
+补：include指令和jsp：include标签对比：真正开发中一般不用区分，要真做区分，记住两者生成的源文件数量不同就行
+
+1).<jsp.include>标签是在当前JSP页面的执行期间插入被引入资源的输出内容.
+被动态引入的资源必须是一个能独立被WEB容器调用的资源
+include指令只能引入遵循JSP格式的文件，被引入文件与当前JSP文件共同合并翻译成一个Servlet的源文件。
+
+
+5.jsp.forward:
+
+1).
+
+<jsp:forward page="a.jsp"></jsp:forward>
+
+	<%
+		request.getRequestDispatcher("a.jsp").forward(request, response);
+	%>
+2).但使用jsp:forward可以使用jsp:param字标签向b.jsp传入一些参数，同样jsp：include标签也可以
+
+	<jsp:forward page="a.jsp">
+		<jsp:param name="name" value="user"/>
+	</jsp:forward>
+	在a.jsp页面可以通过 String s=request.getParameter("name");获取传入的请求参数

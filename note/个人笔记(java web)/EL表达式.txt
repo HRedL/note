@@ -1,0 +1,76 @@
+1.EL简介
+EL全名为Expression Language，它原本是JSTL1.0为方便存取数据所自定义的语言。
+当时EL只能在JSTL标签中使用，现在EL已经独立了，在网页里可以独立使用EL表达式
+
+2.EL的.和[]运算符
+EL提供.和[]两种运算符
+${}
+如果域对象中的属性名带有特殊字符，则使用[]运算符会很方便
+
+3.EL变量
+EL存取变量数据的方法很简单，例如：${username}。它的意思是取出某一范围中名称为username
+的变量，因为我们并没有指定哪一个范围的username，所以它的默认值会先从Page范围找，假如找不到，
+再依序到Request、Session、Application范围。假如途中找到username，就直接回传，不再继续找下去，
+但是假如全部的范围都没有找到时，就回传null
+
+属性范围		在EL中的名称
+Page		PageScope
+Request		RequestScope
+Session		SessionScope
+Application	ApplicationScope
+
+我们也可以指定要取出哪一个范围的变量
+
+范例			说明
+${pageScope.username}	取出Page范围的username变量
+${requestScope.username}	取出Request范围的username变量
+${sessionScope.username}	取出Session范围的username变量
+${applicationScope.username}	取出Application范围的username变量
+
+其中，pageScope、requestScope、sessionScope和applicationScope都是EL的隐含对象，由它们的名称
+可以很容易猜出它们所代表的意思
+
+4.EL可以进行自动的类型转换
+${sessionScope.customer.age+30}
+
+5.EL中的隐含对象
+（1）.与范围有关的隐含对象
+pageScope，requestScope，sessionScope，applicationScope
+（2）.与输入有关的隐含对象
+param 获取一个参数的一个值
+paramValues获取一个参数的一组值
+（3）.其他隐含对象
+cookie header headerValues、initParam、pageContext
+其中最有用的是pageContext
+
+了解即可：cookie的使用方式${cookie.JESSIONID.name}--${cookie.JESSIONID.value}
+	header的使用方式${header["Accept-Language"]}这里只能用[]，因为其中有符号
+	initParam：获取当前web应用的初始化参数${initParam.initName}
+重点记忆：pageContext：
+	pageContext极为PageContext类型，但只能读取属性，只要有不带参数的get方法，就能一直.
+	${pageContext.request.contextPath} 
+	${pageContext.session.id}
+
+6.EL的运算符
+EL的关系运算符
+EL的关系运算符要写在{}的里面,例如：${param.score>60:"及格":"不及格"}
+
+EL的empty运算符
+empty可以作用于一个集合，若该集合不存在或集合中没有元素，其结果都为true
+例:
+<%
+List<String> list=new ArrayList<String>();
+list.add("dasdas");
+request.setAttribute("list", list);
+%>
+${empty requestScope.list}
+${empty list2}
+
+结果为：false true
+
+
+
+
+
+
+

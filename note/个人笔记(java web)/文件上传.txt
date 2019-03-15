@@ -1,0 +1,24 @@
+1.进行文件上传时，表单需要的准备：
+
+1）.请求方式为POST：<form action="" method="post" ...>
+2）.使用file的表单域：<input type="file" name="file" />
+3）.使用multipart/form-data的请求编码方式：<form action="" ... enctype="multipart/form-data">
+<form action="" method="post" enctype="multipart/form-data">
+		<input type="file" name="file" />
+		<input type="submit" value="Submit"/>
+</form>
+
+4）.关于enctype：
+	>application/x-www-form-urlencoded:表单enctype属性的属性值。这种编码方案使用有限的字符集
+	当使用了非字符和数字时。必须用%HH代替（H代表十六进制数字）。对于大容量的二进制数据或包含ASSC II
+	字符的文本来说。这种编码不能满足要求
+
+	>multipart/form-data：form设定了enctype="multipart/form-data"属性后，表示表单以二进制传输数据
+
+2。服务端：
+1）.不能再使用request.getParameter()等方式获取请求信息。获取不到，因为请求的编码方式已经改为multipart/form-data
+，以二进制的方式来提交请求信息
+
+2）.可以使用输入流的方式来获取。但不建议这样做
+
+3）.具体使用commons-fileupload组件来完成文件的上传操作

@@ -1,0 +1,159 @@
+1.使用JavaEE版的Eclipse开发动态的web工程（JavaWEB项目）
+1）.把开发选项切换到javaEE
+2）.可以再window-》show view中找到package explorer，并把其拖拽到开发区的左边
+3）.在servers面板中新建Tomcat服务器，一定要关联到Tomcat安装的根目录
+4).新建一个Dynamic Web Project，其中Target Runtime需选择Tomcat
+5）.开发java WEB应用
+6）.可以通过run on server来运行WEB项目。
+
+2.Servlet简介：一个接口
+Java Servlet是和平台无关的服务器端组件，它运行在Servlet容器中。Servlet容器负责Servlet
+和客户的通信以及调用Servlet的方法，Servlet和客户的通信采用“请求/响应”的模式。
+Servlet可完成如下功能
+-创建并返回基于客户请求的动态的HTML页面。
+-创建可嵌入到现在HTML页面中的部分HTML页面（HTML片段）。
+-与其他服务器资源（如数据库或基于java的应用程序）进行通信。
+
+3.Servlet容器：运行Servlet、jsp、Filter等软件环境。
+1）.可以来创建Servlet，并调用Servlet的相关调用方法。
+2）.JSP,Filter,Listener,TAg.....
+
+4.Servlet生命周期的方法：以下方法都是由Servlet容器负责调用。
+1）.构造器:只被调用一次， 只有第一次请求Servlet时，创建Servlet的实例，调用构造器
+这说明Servlet是单实例的，所以有线程安全的问题，所以不推荐在Servlet里面写一个全局变量，每次创建实例的时候改变它
+2）.init方法：只被调用一次，在创建好实例时立即被调用，用于初始化当前Servlet
+3）.service:被调用多次，每次请求都会调用service方法，实际用于响应请求的
+4）.destroy：只被调用一次，在当前Servlet所在的WEB应用被卸载时调用，用于当前Servlet所占用的资源
+
+5.load-on-startup
+1）.配置在servlet节点中：
+2).load-on-startup:可以指定Servlet被创建的时机，若为负数，则在第一次请求时被创建，若为0或正数，则在当前WEB应用被
+Servlet容器加载时创建实例，且数越小被创建。
+
+6.关于servlet-mapping。
+1）.同一个Serlet可以被映射到多个URL上，即多个<servlet-mapping>元素的<servlet-name>子元素的设置值可以
+是同一个Servlet的注册名
+
+2）.在Servlet映射到的URL中也可以使用*通配符，但是只能有两种固定的格式，
+一种格式是“*.扩展名”.另一种格式是以正斜杠（/）开头并以“/*”结尾。
+7.ServletConfig:封装了Servlet配置信息，并且可以获取ServletContext对象
+
+1）.配置Servlet的初始化参数，且节点必须在load-on-startup前面
+例如
+	<init-param>
+		<param-name>user</param-name>
+		<param-value>root</param-value>
+		
+	</init-param>
+	如果不会，就去看以前写的xml文件
+
+ServletConfig的方法
+2）.获取Servlet参数
+servletConfig.getInitParameterNames()获取Servelt的名字
+servletConfig.getInitParameter(String s)获取s对应的Servlet的值
+
+3）.servletConfig.getServletName（）获取当前Servlet的名字，
+即<servlet-name>HelloWord</servlet-name>
+
+4）.servletConfig.getServletContext()，，，返回ServletContext对象，具体见8
+
+
+
+8.ServletContext
+1).可以由ServletConfig获取
+2）.该对象代表当前的web应用：可以认为ServletContext是当前WEB应用的一个管家，可以从照片那个获取到
+当前WEB应用的各个方面的信息。
+
+
+①获取当前WEB应用的初始化参数
+
+其中，配置当前WEB应用的初始化参数
+
+<context-param>
+	<param-name>name</param-name>
+	<param-value>huahonglei</param-value>
+</context-param>
+
+当前WEB应用的初始化参数和Servlet的初始华参数的区别
+一个是局部的初始化参数，一个是全局的初始化参数。。。
+可以为servlet所获取，而servlet的初始化参数，只有那个servlet才能获取
+
+
+
+方法：
+getInitParameter（String s）获取 名s 对应的WEB应用的的值，，
+
+Enumeration getInitParameterNames（）获取当前WEB应用的 名 ，返回一个Enumeration类型的集合
+
+②.获取当前WEB应用的某一个文件在服务器上的绝对路径，而不是部署前的路径
+String getRealPath（String path）
+
+
+③获取当前WEB应用的名称
+api上是这样说的 Returns the context path of the web application
+
+String getContextPath（）
+
+④获取当前WEB应用的某一个文件对应的输入流。
+InputStream getResourceAsStream（String path）：path的/为当前WEB应用的根目录
+
+代码	try {
+			ClassLoader classloader = getClass().getClassLoader();
+			InputStream is = classloader.getResourceAsStream("Servlet.txt");
+			System.out.println(is);
+		} catch (Exception e2) {
+			
+		}
+
+注意
+		try {
+			InputStream is2 = sc.getResourceAsStream("/WEB-INF/classes/Servlet.txt");
+			System.out.println(is2);
+		} catch (Exception e2) {
+			
+		}
+⑤和Attribute相关的几个方法
+
+9.
+1）.使用GET方式传递参数：
+①.再浏览器地址栏中输入某个URL地址或者单击网页上的一个超链接时，浏览器发出的HTTP请求消息的请求方式为GET
+②.如果网页中的<form>表单元素的属性被谁设置为了“GET”，浏览器提交这个FORM表单时声称的HTTP请求消息的请求方式也为“GET”
+③.使用GET请求方式给WEB服务器传递参数的格式：
+④.使用GET方式传送的数据量一般限制在1KB以下。
+
+2）.使用POST方式传递参数：
+①.POST请求方式主要用于向WEB服务器端提交FORM表中的数据：form表单method置为POST
+②.使用POST方式将各个表单字段元素及其数据作为HTTP消息的实体内容发送诶WEB服务器，传送的数据量要比使用GET方式传送的数据量大得多。
+
+10.
+1).Servlet的service（）方法用于应答请求：因为每次请求都会调用service（）方法
+
+	public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+		System.out.println("service");		
+	}
+
+ServletRequest：封装了请求信息，可以从中获取到任何的请求信息
+ServletResponse：封装了响应信息，如果想给用户什么响应，均可以使用该接口的方法实现	
+
+这两个接口都是服务器给予实现的，并在服务器调用service（）方法时传入
+
+2）.ServletRequest:
+
+①获取请求参数
+
+ 》String getParameter(String name)根据请求参数的名字返回参数值 
+	若请求参数有多个值(例如checkbox)，该方法只能获取第一个提交的值
+ 》String[] getParameterValues(String name) 根据请求参数的名字，返回请求参数对应的字符串数组。
+
+ 》Enumeration getParameterNames()返回参数名对应的Enumeration对象，类似于ServletConfig的getInitParameterNames（）方法 
+	
+ 》 Map getParameterMap()返回请求参数的键值对：key：参数名（String） value：参数值（String[]）
+          
+ 
+          
+
+
+
+
+
+
